@@ -1,12 +1,19 @@
 {
-  "name": "nexus-javascript",
+  "name": "nexus-client",
   "version": "0.0.1",
-  "description": "Nexus javascript client",
-  "main": "index.js",
+  "description": "Nexus Client - Javascript implementation",
+  "main": "./build/lib/nexus.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "author": "Daniel Pecos Martinez",
+  "typescript": {
+    "definition": "index.d.ts"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com:dpecos/nexus-client-js.git"
+  },
+  "author": "Daniel Pecos",
   "license": "MIT",
   "dependencies": {
     "bunyan": "^1.8.1",

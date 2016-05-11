@@ -14,7 +14,7 @@ gulp.task('build', ['compile'], function () {});
 
 gulp.task('watch', ['build'], function () {
   nodemon({
-    script: 'build/demo_client.js',
+    script: 'build/test/echo.js',
     ignore: ['build/', 'node_modules/', 'typings/'],
     ext: 'ts json',
     "execMap": {

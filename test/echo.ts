@@ -1,4 +1,4 @@
-import * as nexus from "./index";
+import * as nexus from "../lib/nexus";
 import * as bunyan from "bunyan";
 
 const log = bunyan.createLogger({ name: 'nexus-demo' });
