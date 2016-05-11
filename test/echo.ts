@@ -28,6 +28,14 @@ connection.connect().then((client) => {
             requestTask();
          }
 
+      }).catch(err => {
+         if (err.message == 'Timeout') {
+            log.warn("# Timeout received");
+            requestTask();
+         } else {
+            log.error("# Error", err);
+            process.exit(-1);
+         }
       });
 
    };
@@ -40,7 +48,7 @@ connection.connect().then((client) => {
       });
    };
 
-   rpcCall("demo.echo", { message: "Hello World!" })
+   rpcCall("demo.echo", { message: "Hello\n World!" })
    rpcCall("demo.echo", null);
    rpcCall("demo.fail", null);
    rpcCall("demo.xxx", null);

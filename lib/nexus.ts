@@ -4,7 +4,7 @@ const events = require('events');
 import * as bunyan from "bunyan";
 const log = bunyan.createLogger({
    name: 'nexus-client',
-   level: "info"
+   level: "debug"
 });
 
 const rpc = require("jsonrpc-lite");
