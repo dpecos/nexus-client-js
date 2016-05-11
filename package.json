@@ -1,0 +1,15 @@
+{
+  "name": "nexus-javascript",
+  "version": "0.0.1",
+  "description": "Nexus javascript client",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Daniel Pecos Martinez",
+  "license": "MIT",
+  "dependencies": {
+    "bunyan": "^1.8.1",
+    "jsonrpc-lite": "^1.1.1"
+  }
+}
