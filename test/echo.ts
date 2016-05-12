@@ -41,17 +41,22 @@ connection.connect().then((client) => {
    };
 
    const rpcCall = (method, params) => {
-      client.pushTask(method, params, 10).then((response) => {
+      return client.pushTask(method, params, 10).then((response) => {
          log.info("* Response: " + response);
       }).catch((err) => {
          log.error("* Received error", err);
       });
    };
 
-   rpcCall("demo.echo", { message: "Hello\n World!" })
-   rpcCall("demo.echo", null);
-   rpcCall("demo.fail", null);
-   rpcCall("demo.xxx", null);
+   Promise.all([
+      rpcCall("demo.echo", { message: "Hello\n World!" }),
+      rpcCall("demo.echo", null),
+      rpcCall("demo.fail", null),
+      rpcCall("demo.xxx", null)
+   ]).then(() => {
+      log.info("All requests done -- exiting...");
+      client.close();
+   });
 
    requestTask();
 

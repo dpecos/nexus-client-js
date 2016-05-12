@@ -4,7 +4,7 @@ const events = require('events');
 import * as bunyan from "bunyan";
 const log = bunyan.createLogger({
    name: 'nexus-client',
-   level: "debug"
+   level: "info"
 });
 
 const rpc = require("jsonrpc-lite");
@@ -77,6 +77,14 @@ export class Connection {
       });
    };
 
+   disconnect() {
+      if (this.socket) {
+         log.debug("Nexus Connection: closing socket to nexus server");
+         this.socket.end();
+         this.socket.destroy();
+      }
+   }
+
    write(data: string) {
       log.debug("Nexus Connection: sending data: " + data);
       this.socket.write(data + "\n");
@@ -87,16 +95,23 @@ export class Connection {
 export class Client {
    private requestHandlers;
    private requestIdCounter;
+   private pingHandler;
 
    constructor(private connection: Connection) {
       this.requestHandlers = {};
       this.requestIdCounter = 1;
 
-      setInterval(() => {
+      this.pingHandler = setInterval(() => {
          this.exec("sys.ping").then(() => {
             // log.debug("Nexus Client: ping sent");
          });
       }, 60 * 1000);
+   }
+
+   close() {
+      clearInterval(this.pingHandler);
+      
+      this.connection.disconnect();
    }
 
    private newId(): string {
@@ -144,9 +159,9 @@ export class Client {
       } else {
          log.error("Nexus Client - Error: no promise registered for id " + response.payload.id);
       }
-      
+
    }
-   
+
    dataReady(data) {
       // important: on a single callback there could be multiple rpc messages in the same string
       data.toString().split("\n").forEach(jsonrpcMessage => {
