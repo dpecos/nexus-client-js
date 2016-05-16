@@ -59,11 +59,13 @@ export class Connection {
          this.dataReady.emit("data", dataStr);
       });
 
-      this.socket.on("error", (err) => {
-         log.error("Nexus Connection - Error", err);
-      });
-
       return new Promise<Client>((resolve, reject) => {
+
+         this.socket.on("error", (err) => {
+            log.error("Nexus Connection - Error", err);
+            reject(err);
+         });
+
          this.socket.connect(this.port, this.ip, () => {
             // log.debug("Nexus Connection: connected to nexus");
 
@@ -108,10 +110,19 @@ export class Client {
       }, 60 * 1000);
    }
 
+   login(user: string, password: string): Promise<any> {
+      let parameters: any = {
+         user: user,
+         pass: password
+      }
+      return this.exec("sys.login", parameters);
+   }
+
    close() {
       clearInterval(this.pingHandler);
-      
+
       this.connection.disconnect();
+      this.connection = null;
    }
 
    private newId(): string {
@@ -125,7 +136,11 @@ export class Client {
       return new Promise<any>((resolve, reject) => {
          this.requestHandlers[id] = [resolve, reject];
          process.nextTick(() => {
-            this.connection.write(jsonrequest);
+            if (this.connection) {
+               this.connection.write(jsonrequest);
+            } else {
+               reject(new Error(-1, "Not connected"));
+            }
          });
       });
    };

@@ -9,6 +9,7 @@ connection.connect().then((client) => {
    const requestTask = () => {
 
       client.pullTask("demo", 10).then((task) => {
+
          try {
             log.info("# Request: " + task);
             if (task.method == "echo") {
@@ -29,12 +30,15 @@ connection.connect().then((client) => {
          }
 
       }).catch(err => {
-         if (err.message == 'Timeout') {
-            log.warn("# Timeout received");
+         if (err.code !== -1) {
+            if (err.message == 'Timeout') {
+               log.warn("# Timeout received");
+            } else {
+               log.error("# Error", err);
+            }
             requestTask();
          } else {
-            log.error("# Error", err);
-            process.exit(-1);
+            log.error("# Nexus connection lost");
          }
       });
 
@@ -44,20 +48,31 @@ connection.connect().then((client) => {
       return client.pushTask(method, params, 10).then((response) => {
          log.info("* Response: " + response);
       }).catch((err) => {
-         log.error("* Received error", err);
+         log.error("* Error received:", err);
       });
    };
 
-   Promise.all([
-      rpcCall("demo.echo", { message: "Hello\n World!" }),
-      rpcCall("demo.echo", null),
-      rpcCall("demo.fail", null),
-      rpcCall("demo.xxx", null)
-   ]).then(() => {
-      log.info("All requests done -- exiting...");
+   log.info("Logging in into nexus...");
+
+   client.login("root", "root").then(() => {
+
+      Promise.all([
+         rpcCall("demo.echo", { message: "Hello\n World!" }),
+         rpcCall("demo.echo", null),
+         rpcCall("demo.fail", null),
+         rpcCall("demo.xxx", null)
+      ]).then(() => {
+         log.info("All requests done -- exiting...");
+         client.close();
+      });
+
+      requestTask();
+
+   }).catch(err => {
+      log.error("Could not log in", err);
       client.close();
    });
 
-   requestTask();
-
+}).catch(err => {
+   log.error("Could not connect to nexus", err);
 });
