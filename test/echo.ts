@@ -16,29 +16,30 @@ connection.connect().then((client) => {
                if (task.parameters && task.parameters.message) {
                   task.sendResult(task.parameters.message);
                } else {
-                  task.sendError(-32602, "Invalid parameter");
+                  task.sendError(nexus.Error.INVALID_PARAMS);
                }
             } else if (task.method == "fail") {
                throw new Error("Whatever you need...");
             } else {
-               task.sendError(-32601, "Unknown method");
+               task.sendError(nexus.Error.METHOD_NOT_FOUND);
             }
          } catch (err) {
-            task.sendError(-32600, "Unhandled error: " + err.toString());
+            log.error("# Uncaught error", err);
+            task.sendError(nexus.Error.INTERNAL, err.toString());
          } finally {
             requestTask();
          }
 
       }).catch(err => {
-         if (err.code !== -1) {
+         if (err.code === nexus.Error.CANCEL.code) {
+            log.warn("# Request cancelled. Probably connection was lost. Exiting...")
+         } else {
             if (err.message == 'Timeout') {
                log.warn("# Timeout received");
             } else {
                log.error("# Error", err);
             }
             requestTask();
-         } else {
-            log.error("# Nexus connection lost");
          }
       });
 

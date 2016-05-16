@@ -19,11 +19,11 @@ export class Task {
       };
       this.client.exec("task.result", parameters);
    }
-   sendError(code: number, message: string, data?: any) {
+   sendError(error: Error, data?: any) {
       let parameters = {
          taskid: this.taskid,
-         code: code,
-         message: message,
+         code: error.code,
+         message: error.message,
          data: data
       };
       this.client.exec("task.error", parameters);
@@ -34,6 +34,19 @@ export class Task {
 }
 
 export class Error {
+   static PARSE = new Error(-32700, "Parse Error")
+   static INVALID_REQUEST = new Error(-32600, "Invalid request")
+   static METHOD_NOT_FOUND = new Error(-32601, "Method not found")
+   static INVALID_PARAMS = new Error(-32602, "Invalid params")
+   static INTERNAL = new Error(-32603, "Internal error")
+   static TIMEOUT = new Error(-32000, "Timeout")
+   static CANCEL = new Error(-32001, "Cancel")
+   static INVALID_TASK = new Error(-32002, "Invalid task")
+   static INVALID_PIPE = new Error(-32003, "Invalid pipe")
+   static INVALID_USER = new Error(-32004, "Invalid user")
+   static USER_EXISTS = new Error(-32005, "User already exists")
+   static PERMISSION_DENIED = new Error(-32010, "Permission denied")
+
    constructor(public code: number, public message: string) {
    }
    toString(): string {
@@ -63,7 +76,7 @@ export class Connection {
 
          this.socket.on("error", (err) => {
             log.error("Nexus Connection - Error", err);
-            reject(err);
+            reject(Error.INTERNAL);
          });
 
          this.socket.connect(this.port, this.ip, () => {
@@ -139,40 +152,48 @@ export class Client {
             if (this.connection) {
                this.connection.write(jsonrequest);
             } else {
-               reject(new Error(-1, "Not connected"));
+               log.error("Nexus Client: Not connected");
+               reject(Error.CANCEL);
             }
          });
       });
    };
 
    private handleRequest(jsonrpcMessage) {
-      const response = rpc.parse(jsonrpcMessage);
+      let response = null;
+      try {
+         response = rpc.parse(jsonrpcMessage);
+      } catch (err) {
+         log.error("Nexus Client: error parsing JSON RPC message", err);
+      }
 
-      const handlers = this.requestHandlers[response.payload.id];
+      if (response) {
+         const handlers = this.requestHandlers[response.payload.id];
 
-      if (handlers) {
+         if (handlers) {
 
-         if (response.type == 'success') {
-            const result = response.payload.result;
-            if (result.taskid) {
-               // pullTask response 
-               const task = new Task(this, result.taskid, result.path, result.method, result.params);
-               // log.debug("Nexus Client: new task received for " + task.path + task.method);
-               handlers[0](task);
-            } else {
-               // pushTask response
-               // log.debug("Nexus Client: RPC result received: " + JSON.stringify(result));
-               handlers[0](result);
+            if (response.type == 'success') {
+               const result = response.payload.result;
+               if (result.taskid) {
+                  // pullTask response 
+                  const task = new Task(this, result.taskid, result.path, result.method, result.params);
+                  // log.debug("Nexus Client: new task received for " + task.path + task.method);
+                  handlers[0](task);
+               } else {
+                  // pushTask response
+                  // log.debug("Nexus Client: RPC result received: " + JSON.stringify(result));
+                  handlers[0](result);
+               }
+            } else if (response.type == 'error') {
+               const error = new Error(response.payload.error.code, response.payload.error.message)
+               handlers[1](error);
             }
-         } else if (response.type == 'error') {
-            const error = new Error(response.payload.error.code, response.payload.error.message)
-            handlers[1](error);
+
+            delete this.requestHandlers[response.payload.id];
+
+         } else {
+            log.error("Nexus Client - Error: no promise registered for id " + response.payload.id);
          }
-
-         delete this.requestHandlers[response.payload.id];
-
-      } else {
-         log.error("Nexus Client - Error: no promise registered for id " + response.payload.id);
       }
 
    }
