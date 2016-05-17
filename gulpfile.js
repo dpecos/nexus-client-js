@@ -1,6 +1,6 @@
 var gulp = require('gulp');
 var ts = require('gulp-typescript');
-var nodemon = require('gulp-nodemon');
+var mocha = require('gulp-mocha');
 
 var tsProject = ts.createProject('tsconfig.json');
 
@@ -10,20 +10,12 @@ gulp.task('compile', function() {
   return tsResult.js.pipe(gulp.dest('build'));
 });
 
-gulp.task('build', ['compile'], function () {});
-
-gulp.task('watch', ['build'], function () {
-  nodemon({
-    script: 'build/test/echo.js',
-    ignore: ['build/', 'node_modules/', 'typings/'],
-    ext: 'ts json',
-    "execMap": {
-      "js": "node --harmony"
-    },
-    tasks: ['compile']
-  }).on('restart', function () {
-    //console.log('Gulp: Server ready!')
-  });
+gulp.task('test', function() {
+  gulp.src('build/test/*').pipe(mocha({reporter: 'nyan'}));
 });
 
-gulp.task('default', ['build'], function () {});
+gulp.task('watch', ['compile', 'test'], function () {
+  gulp.watch(['**/*.ts', '!build/', '!node_modules/', '!typings/'], ['compile', 'test']);
+});
+
+gulp.task('default', ['compile', 'test'], function () {});

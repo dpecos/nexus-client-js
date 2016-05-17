@@ -12,21 +12,21 @@ const rpc = require("jsonrpc-lite");
 export class Task {
    constructor(private client: Client, private taskid: string, public path: string, public method: string, public parameters: any) {
    }
-   sendResult(result: any) {
+   sendResult(result: any): Promise<any> {
       let parameters = {
          taskid: this.taskid,
          result: result
       };
-      this.client.exec("task.result", parameters);
+      return this.client.exec("task.result", parameters);
    }
-   sendError(error: Error, data?: any) {
+   sendError(error: Error, data?: any): Promise<any> {
       let parameters = {
          taskid: this.taskid,
          code: error.code,
          message: error.message,
          data: data
       };
-      this.client.exec("task.error", parameters);
+      return this.client.exec("task.error", parameters);
    }
    toString(): string {
       return "{" + this.method + ": " + JSON.stringify(this.parameters) + "}";

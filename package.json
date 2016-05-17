@@ -18,5 +18,10 @@
   "dependencies": {
     "bunyan": "^1.8.1",
     "jsonrpc-lite": "^1.1.1"
+  },
+  "devDependencies": {
+    "gulp-mocha": "^2.2.0",
+    "chai": "^3.5.0",
+    "mocha": "^2.4.5"
   }
 }
