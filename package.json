@@ -1,6 +1,6 @@
 {
   "name": "nexus-client",
-  "version": "0.0.1",
+  "version": "0.1.0",
   "description": "Nexus Client - Javascript implementation",
   "main": "./build/lib/nexus.js",
   "scripts": {
