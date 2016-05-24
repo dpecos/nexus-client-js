@@ -3,7 +3,7 @@ import * as bunyan from "bunyan";
 
 const log = bunyan.createLogger({ name: 'nexus-demo' });
 
-const connection = new nexus.Connection("188.164.131.164", 1717);
+const connection = new nexus.Connection("nexus.n4m.zone", 1717);
 connection.connect().then((client) => {
 
    const requestTask = () => {
@@ -11,7 +11,7 @@ connection.connect().then((client) => {
       client.pullTask("demo", 10).then((task) => {
 
          try {
-            log.info("# Request: " + task);
+            log.info("# Request: " + task + " - (" + JSON.stringify(task.tags) + ")");
             if (task.method == "echo") {
                if (task.parameters && task.parameters.message) {
                   task.sendResult(task.parameters.message);

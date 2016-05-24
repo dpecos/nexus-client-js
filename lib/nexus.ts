@@ -10,7 +10,7 @@ const log = bunyan.createLogger({
 const rpc = require("jsonrpc-lite");
 
 export class Task {
-   constructor(private client: Client, private taskid: string, public path: string, public method: string, public parameters: any) {
+   constructor(private client: Client, private taskid: string, public path: string, public method: string, public parameters: any, public tags: any) {
    }
    sendResult(result: any): Promise<any> {
       let parameters = {
@@ -119,6 +119,9 @@ export class Client {
       this.pingHandler = setInterval(() => {
          this.exec("sys.ping").then(() => {
             // log.debug("Nexus Client: ping sent");
+         }).catch((err) => {
+            log.error("Ping timeout!", err);
+            this.close(); 
          });
       }, 60 * 1000);
    }
@@ -176,7 +179,7 @@ export class Client {
                const result = response.payload.result;
                if (result.taskid) {
                   // pullTask response 
-                  const task = new Task(this, result.taskid, result.path, result.method, result.params);
+                  const task = new Task(this, result.taskid, result.path, result.method, result.params, result.tags);
                   // log.debug("Nexus Client: new task received for " + task.path + task.method);
                   handlers[0](task);
                } else {

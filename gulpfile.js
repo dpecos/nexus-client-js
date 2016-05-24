@@ -10,12 +10,12 @@ gulp.task('compile', function() {
   return tsResult.js.pipe(gulp.dest('build'));
 });
 
-gulp.task('test', function() {
+gulp.task('test', ['compile'], function() {
   gulp.src('build/test/*').pipe(mocha({reporter: 'nyan'}));
 });
 
-gulp.task('watch', ['compile', 'test'], function () {
-  gulp.watch(['**/*.ts', '!build/', '!node_modules/', '!typings/'], ['compile', 'test']);
+gulp.task('watch', ['test'], function () {
+  gulp.watch(['**/*.ts', '!build/', '!node_modules/', '!typings/'], ['test']);
 });
 
-gulp.task('default', ['compile', 'test'], function () {});
+gulp.task('default', ['compile'], function () {});

@@ -6,7 +6,7 @@ chai.should();
 
 const log = bunyan.createLogger({ name: 'nexus-demo', level: "error"});
 
-const NEXUS_HOST = "188.164.131.164";
+const NEXUS_HOST = "nexus.n4m.zone";
 const NEXUS_PORT = 1717;
 const NEXUS_USER = "root";
 const NEXUS_PASSWD = "root";
@@ -22,7 +22,7 @@ describe("Client/Server interaction", () => {
             client.pullTask("demo", 1).then((task) => {
 
                try {
-                  log.info("# Request: " + task);
+                  log.info("# Request: " + task + " - (" + JSON.stringify(task.tags) + ")");
                   if (task.method == "echo") {
                      if (task.parameters && task.parameters.message) {
                         task.sendResult(task.parameters.message);
