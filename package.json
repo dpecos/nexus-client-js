@@ -9,6 +9,7 @@
   "typescript": {
     "definition": "index.d.ts"
   },
+  "main": "lib/nexus.js",
   "repository": {
     "type": "git",
     "url": "git+ssh://git@github.com:dpecos/nexus-client-js.git"
